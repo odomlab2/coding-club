@@ -1,0 +1,99 @@
+---
+title: "Handling single-cell dataset"
+output: html_notebook
+---
+
+```{r installation, eval=FALSE, include=FALSE}
+
+# run manually when packages not installed
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("scran")
+BiocManager::install("scater")
+
+
+install.packages("Seurat")
+install.packages("tidyverse")
+```
+
+```{r}
+library(tidyverse)
+library(Seurat)
+library(scater)
+library(scran)
+```
+
+# Seurat
+
+Download a fully prepared Seurat object and read into R: 
+
+```{r}
+download.file(url = "https://www.dropbox.com/s/kwd3kcxkmpzqg6w/pbmc3k_final.rds?raw=1", 
+              destfile = "../data/pbmc3k_final.rds")
+
+seu_pbmc <- readRDS("../data/pbmc3k_final.rds")
+
+seu_pbmc <- SeuratObject::UpdateSeuratObject(seu_pbmc) # update to newest data structure
+```
+
+The Seurat object contains multiple *slots* that store diffent facets of the data: 
+
+```{r}
+slotNames(seu_pbmc)
+```
+
+
+
+To **view** the name of data in the slots in the object via defined functions, such as `Assays(seurat_object)` 
+
+The data can be accessed with R's built in operators `@` and `$`: 
+ - `seurat_object@assays`
+ - `seurat_object@assays$RNA`
+
+```{r}
+Assays(seu_pbmc)
+seu_pbmc@assays
+Idents(seu_pbmc)
+Reductions(seu_pbmc)
+Project(seu_pbmc)  
+Graphs(seu_pbmc)
+colnames(seu_pbmc) %>% head() # show cells 
+rownames(seu_pbmc) %>% head() # show featuers
+dim(seu_pbmc)
+
+
+```
+
+
+
+## SingleCellExperiment
+
+We can convert the Seurat object to a SCE object: 
+
+```{r explore_sce}
+sce_pbmc <- Seurat::as.SingleCellExperiment(seu_pbmc)
+sce_pbmc
+```
+
+
+![](images/sce.png "SCE")
+
+
+
+```{r }
+rownames(sce_pbmc) %>% head() # print gene IDs
+
+slotNames(sce_pbmc) # show slotnames
+
+sce_pbmc@colData
+
+sce_pbmc@rowRanges
+sce_pbmc@assays@data$counts
+SingleCellExperiment::counts(sce_pbmc)
+
+## See ?SingleCellExperiment::count
+```
+
+
